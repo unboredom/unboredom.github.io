@@ -2820,7 +2820,7 @@
     {
       "id": 420,
       "name": "Poly Track",
-      "lesson": 305,
+      "path": "/extras/PolyTrack",
       "tags": [
         "driving",
         "3d",
