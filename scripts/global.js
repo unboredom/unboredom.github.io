@@ -72,6 +72,32 @@ const schedule = [
     { name: "school", start: "13:16", end: "14:05" }
 ];
 
+let cached = null;
+
+function injectNavbar(html) {
+    const el = document.getElementById("navbar");
+    if (el) el.innerHTML = html;
+}
+
+try {
+    cached = localStorage.getItem("navbar");
+} catch (e) {}
+
+if (cached) injectNavbar(cached);
+
+fetch("/components/navbar.html")
+    .then(res => {
+        if (!res.ok) throw new Error("Failed to load navbar");
+        return res.text();
+    })
+    .then(html => {
+        if (html && html !== cached) {
+            try { localStorage.setItem("navbar", html); } catch (e) {}
+            injectNavbar(html);
+        }
+    })
+    .catch(() => {});
+
 const WS_URL = "wss://tctbbackend.up.railway.app";
 const path = window.location.pathname;
 const searchBar = document.getElementById("search");
@@ -89,7 +115,6 @@ document.documentElement.style.setProperty('--show-id', '0');
 const session = getSession();
 let suggestDebounce = false;
 let isLeaving = false;
-let cached = null;
 let favorites = getFavorites();
 let allLessons = [];
 let online = [];
@@ -564,11 +589,6 @@ function submitChatMessage(wasButton) {
     chatInput.placeholder = "Send a message...";
 }
 
-function injectNavbar(html) {
-    const el = document.getElementById("navbar");
-    if (el) el.innerHTML = html;
-}
-
 function getDisguise() {
     let disguise = localStorage.getItem("disguise");
 
@@ -793,26 +813,6 @@ function renderLessons(lessons) {
             });
     }
 }
-
-try {
-    cached = localStorage.getItem("navbar");
-} catch (e) {}
-
-if (cached) injectNavbar(cached);
-
-fetch("/components/navbar.html")
-    .then(res => {
-        if (!res.ok) throw new Error("Failed to load navbar");
-        return res.text();
-    })
-    .then(html => {
-        if (html && html !== cached) {
-            try { localStorage.setItem("navbar", html); } catch (e) {}
-            injectNavbar(html);
-        }
-    })
-    .catch(() => {});
-
     
 const chatMenu = document.getElementById("chat-menu");
 const chatInput = document.getElementById("chat-input");
