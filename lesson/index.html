@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <link rel="icon" type="image/x-icon" href="https://canvas.instructure.com/favicon.ico">
+        <title>Inbox</title>
+
+        <link rel="stylesheet" href="/styles/global.css">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+        <script src="https://cdn.tailwindcss.com"></script>
+    </head>
+    <body class="bg-bg text-white">
+        <div id="navbar"></div>
+
+        <main class="pt-20 px-4 max-w-7xl mx-auto">
+            <div class="card bg-warning/25 px-5 py-4 flex items-center gap-1 hidden" id="lessonWarning">
+                <img class="h-5 mr-2" src="/assets/icons/warning.png" alt=""></img>
+                <span class="text-warning" id="lessonWarningText"></span>
+            </div>
+
+            <iframe id="lessonFrame" class="w-full rounded-xl border-0 aspect-video" allowfullscreen></iframe>
+            
+            <div class="flex items-center justify-between py-2 px-4">
+                <h1 id="lessonName" class="text-2xl font-semibold text-white">Loading...</h1>
+                
+                <div id="game-functionality-prompt" class="flex flex-col gap-1 items-center justify-center px-4 py-2">
+                    <p id="game-functionality-text" class="text-xs text-white/50">Does this game work for you?</p>
+                    <div class="flex gap-1 items-center justify-center">
+                        <button id="game-like" class="flex gap-1 items-center justify-center ml-2 rounded-full bg-success/15 border border-success/50 text-success px-3 py-1 text-sm transition-all duration-300 ease-in-out hover:scale-105 hover:bg-success/25">
+                            <img src="/assets/icons/success.svg" class="h-[1em] w-[1em]">
+                            Yes
+                        </button>
+                        <button id="game-dislike" class="flex gap-1 items-center justify-center ml-2 rounded-full bg-fail/15 border border-fail/50 text-fail px-3 py-1 text-sm transition-all duration-300 ease-in-out hover:scale-105 hover:bg-fail/25">
+                            <img src="/assets/icons/fail.svg" class="h-[1em] w-[1em]">
+                            No
+                        </button>
+                    </div>
+                </div>
+
+                <button id="fullscreen" class="w-10 h-10 rounded-lg hover:bg-white/5 transition flex items-center justify-center">
+                <img src="/assets/icons/fullscreen.png" class="w-8 h-8 object-contain" alt="Fullscreen">
+                </button>
+            </div>
+            </main>
+
+        <script src="/scripts/global.js"></script>
+        <script src="./index.js"></script>
+
+        <div id="console-viewer" class="fixed bottom-0 left-0 right-0 z-50 transition-all duration-300" style="height: 32px;">
+            <div id="console-header" class="flex items-center justify-between bg-black/80 backdrop-blur border-t border-white/10 px-4 cursor-pointer select-none" style="height:32px;" onclick="toggleConsole()">
+                <div class="flex items-center gap-2">
+                    <span class="text-white/50 text-xs font-mono">CONSOLE</span>
+                    <span id="console-error-badge" class="hidden text-xs font-mono bg-fail/20 text-fail border border-fail/40 rounded px-1">0 errors</span>
+                </div>
+                <span id="console-chevron" class="text-white/40 text-xs">▲</span>
+            </div>
+            <div id="console-body" class="hidden bg-black/90 backdrop-blur overflow-y-auto font-mono text-xs" style="height: calc(100% - 32px);">
+                <div id="console-entries" class="p-2 flex flex-col gap-0.5"></div>
+            </div>
+        </div>
+
+        <script>
+            (function () {
+                const viewer = document.getElementById("console-viewer");
+                const body = document.getElementById("console-body");
+                const entries = document.getElementById("console-entries");
+                const badge = document.getElementById("console-error-badge");
+                const chevron = document.getElementById("console-chevron");
+
+                let open = false;
+                let errorCount = 0;
+
+                window.toggleConsole = function () {
+                    open = !open;
+                    viewer.style.height = open ? "260px" : "32px";
+                    body.classList.toggle("hidden", !open);
+                    chevron.textContent = open ? "▼" : "▲";
+                    if (open) entries.lastElementChild?.scrollIntoView();
+                };
+
+                const LEVELS = {
+                    log:   { color: "text-white/70",  label: "LOG  " },
+                    warn:  { color: "text-warning",    label: "WARN " },
+                    error: { color: "text-fail",       label: "ERROR" },
+                    info:  { color: "text-blue-400",   label: "INFO " },
+                };
+
+                function addEntry(level, msg) {
+                    const { color, label } = LEVELS[level] || LEVELS.log;
+                    const row = document.createElement("div");
+                    row.className = `flex gap-2 ${color}`;
+                    row.innerHTML = `<span class="opacity-40 shrink-0">${label}</span><span class="break-all">${msg}</span>`;
+                    entries.appendChild(row);
+                    if (open) row.scrollIntoView();
+
+                    if (level === "error") {
+                        errorCount++;
+                        badge.textContent = `${errorCount} error${errorCount !== 1 ? "s" : ""}`;
+                        badge.classList.remove("hidden");
+                    }
+                }
+
+                ["log", "warn", "error", "info"].forEach(level => {
+                    const orig = console[level].bind(console);
+                    console[level] = (...args) => {
+                        orig(...args);
+                        addEntry(level, args.map(a => typeof a === "object" ? JSON.stringify(a) : String(a)).join(" "));
+                    };
+                });
+
+                window.addEventListener("error", e => addEntry("error", `${e.message} (${e.filename}:${e.lineno})`));
+                window.addEventListener("unhandledrejection", e => addEntry("error", `Unhandled promise rejection: ${e.reason}`));
+
+                window.addEventListener("message", e => {
+                    if (e.data?.type === "iframeLog") addEntry(e.data.level, `[iframe] ${e.data.msg}`);
+                    if (e.data?.type === "iframeError") addEntry("error", `[iframe] ${e.data.msg} (${e.data.src}:${e.data.line})`);
+                });
+            })();
+        </script>
+    </body>
+</html>

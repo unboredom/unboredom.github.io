@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>The Cure to Boredom</title>
+
+    <link rel="stylesheet" href="/styles/global.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-bg text-white">
+  <div id="navbar"></div>
+
+  <main class="pt-20 px-4 max-w-7xl mx-auto">
+    <div class="card bg-light">
+        <h1 class="text-xs opacity-75 mb-1">ACCOUNT USERNAME</h1>
+        <div class="relative flex items-center">
+            <img class="absolute left-[1em] w-[1.5em] h-[1.5em] pointer-events-none" src="/assets/icons/person.png">
+            <input class="widelight" type="text" id="username" maxlength="25" placeholder="Enter username..." autocomplete="off">
+        </div>
+        
+        <h1 class="text-xs opacity-75 mt-2 mb-1">ACCOUNT ID</h1>
+        <div class="relative flex items-center">
+            <img class="absolute left-[1em] w-[1.5em] h-[1.5em] opacity-50 pointer-events-none" src="/assets/icons/id.png">
+            <input class="widelight !text-white/50 pointer-events-none" type="text" id="id" maxlength="25" disabled="true" placeholder="Loading..." autocomplete="off">
+        </div>
+
+        <h1 class="text-xs opacity-75 mt-2 mb-1">WEBSITE THEME</h1>
+        <div id="color-options" class="flex gap-2"></div>
+
+        <h1 class="text-xs opacity-75 mt-2 mb-1">WEBSITE DISGUISE</h1>
+        <div id="disguise-options" class="flex gap-2"></div>
+    </div>
+
+    <div class="card bg-light">
+        <h1 class="text-xs opacity-75 mb-1">SUBMIT A SUGGESTION</h1>
+        <div class="flex gap-3 items-center relative">
+            <div class="relative flex items-center flex-1">
+                <img class="absolute left-[1em] w-[1.5em] h-[1.5em] pointer-events-none" src="/assets/icons/suggestion.png">
+                <input class="widelight" type="text" id="suggestion" placeholder="What should be added or changed?" autocomplete="off">
+            </div>
+            <button id="suggest" class="suggest" onclick="submitSuggestion()"></button>
+        </div>
+    </div>
+  </main>
+  
+  <script src="/scripts/global.js"></script>
+</body>
+</html>
